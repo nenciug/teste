@@ -284,6 +284,24 @@
         .confirm-order-btn:hover {
             background-color: #0056b3;
         }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .notification.show {
+            display: block;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -341,59 +359,80 @@
         </div>
     </section>
 
+    <footer>
+        <p>&copy; 2025 Casa Ta Inteligentă. Toate drepturile rezervate.</p>
+    </footer>
+
     <div class="cart-container" id="cart-container">
         <h4>Coșul tău</h4>
-        <ul id="cart-list">
-            <!-- Produsele vor apărea aici -->
-        </ul>
+        <ul id="cart-items"></ul>
         <button class="close-btn" onclick="toggleCart()">Închide</button>
         <button class="confirm-order-btn" onclick="confirmOrder()">Confirmă comanda</button>
     </div>
 
-    <footer>
-        <p>&copy; 2025 Casa Ta Inteligentă. Toate drepturile rezervate.</p>
-        <p><a href="privacy.html">Politica de confidențialitate</a> | <a href="terms.html">Termeni și condiții</a></p>
-    </footer>
+    <div class="notification" id="notification">
+        Produsul a fost adăugat în coș!
+    </div>
 
     <script>
-        let cart = [];
+        var cart = [];
+        var cartContainer = document.getElementById('cart-container');
+        var cartItems = document.getElementById('cart-items');
+        var notification = document.getElementById('notification');
+        
+        function toggleCart() {
+            if (cartContainer.style.display === 'block') {
+                cartContainer.style.display = 'none';
+            } else {
+                cartContainer.style.display = 'block';
+            }
+        }
 
-        function addToCart(product, price) {
-            cart.push({ product, price });
+        function addToCart(productName, productPrice) {
+            cart.push({ name: productName, price: productPrice });
             updateCart();
+            showNotification();
         }
 
         function updateCart() {
-            const cartList = document.getElementById('cart-list');
-            cartList.innerHTML = '';
-            let total = 0;
-            cart.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = `${item.product} - ${item.price} RON`;
-                cartList.appendChild(li);
+            cartItems.innerHTML = '';
+            var total = 0;
+            cart.forEach(function(item) {
+                var listItem = document.createElement('li');
+                listItem.textContent = item.name + ' - ' + item.price + ' RON';
+                cartItems.appendChild(listItem);
                 total += item.price;
             });
-            const totalLi = document.createElement('li');
-            totalLi.textContent = `Total: ${total} RON`;
-            cartList.appendChild(totalLi);
+
+            var totalItem = document.createElement('li');
+            totalItem.textContent = 'Total: ' + total + ' RON';
+            cartItems.appendChild(totalItem);
         }
 
-        function toggleCart() {
-            const cartContainer = document.getElementById('cart-container');
-            cartContainer.style.display = cartContainer.style.display === 'block' ? 'none' : 'block';
+        function showNotification() {
+            notification.classList.add('show');
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, 3000);
         }
 
         function confirmOrder() {
-            let orderDetails = 'Comandă: \n';
-            cart.forEach(item => {
-                orderDetails += `${item.product} - ${item.price} RON\n`;
+            var orderDetails = 'Produse comandate:\n';
+            var total = 0;
+            cart.forEach(function(item) {
+                orderDetails += item.name + ' - ' + item.price + ' RON\n';
+                total += item.price;
             });
+            orderDetails += 'Total: ' + total + ' RON';
 
-            let total = cart.reduce((sum, item) => sum + item.price, 0);
-            orderDetails += `Total: ${total} RON`;
+            var phoneNumber = '0040775602083';
+            var message = encodeURIComponent(orderDetails);
+            var url = `https://wa.me/${phoneNumber}?text=${message}`;
 
-            let whatsappLink = `https://wa.me/+40775602083?text=${encodeURIComponent(orderDetails)}`;
-            window.open(whatsappLink, '_blank');
+            window.open(url, '_blank');
+            cart = [];
+            updateCart();
+            toggleCart();
         }
     </script>
 </body>
